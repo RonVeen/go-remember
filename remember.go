@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"go-remember/service"
+)
 
 func main() {
-	fmt.Printf("Hi")
+	service.StartWebServer("9999")
 }
