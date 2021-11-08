@@ -9,14 +9,37 @@ type Route struct {
 
 type Routes []Route
 
+var path = "/reminder"
+
 var routes = Routes{
 	Route{
 		"getReminder",
 		"GET",
-		"/reminder/{id}",
-		func(writer http.ResponseWriter, request *http.Request) {
-			writer.Header().Set("content-type", "application/json")
-			writer.Write([]byte("{\n \"Result\" : \"OK\" \n}"))
-		},
+		path + "/{id}",
+		GetReminder,
+	},
+	Route{
+		"getAllReminders",
+		"GET",
+		path,
+		GetAllReminders,
+	},
+	Route{
+		"CreateReminder",
+		"POST",
+		path,
+		CreateReminder,
+	},
+	Route{
+		"UpdateReminder",
+		"PUT",
+		path + "/{id}",
+		UpdateReminder,
+	},
+	Route{
+		"DeleteReminder",
+		"DELETE",
+		path + "/{id}",
+		DeleteReminder,
 	},
 }
