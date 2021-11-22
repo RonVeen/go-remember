@@ -5,11 +5,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"os"
 	"time"
 )
 
+const mongoUrl = "MONGO_URL"
+
 func NewDB() *mongo.Database {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongoadmin:secret@localhost:27017"))
+	mongoUrl := os.Getenv(mongoUrl)
+	if mongoUrl == "" {
+		mongoUrl = "mongodb://mongoadmin:secret@localhost:27017"
+	}
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoUrl))
 	if err != nil {
 		log.Fatal(err)
 	}

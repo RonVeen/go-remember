@@ -30,6 +30,11 @@ func (repo *ReminderRepository) AddReminder(r Reminder) *Reminder {
 	if err != nil {
 		log.Println("Valid to insert entry: " + r.String() + " Reason: " + err.Error())
 	}
+	return &Reminder{
+		Title:     r.Title,
+		Comment:   r.Comment,
+		Completed: r.Completed,
+	}
 	return nil
 }
 
