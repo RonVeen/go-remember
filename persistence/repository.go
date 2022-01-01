@@ -26,20 +26,22 @@ func (r *Reminder) String() string {
 }
 
 func (repo *ReminderRepository) AddReminder(r Reminder) *Reminder {
-	_, err := repo.collection().InsertOne(context.TODO(), r)
+	result, err := repo.collection().InsertOne(context.TODO(), r)
 	if err != nil {
 		log.Println("Valid to insert entry: " + r.String() + " Reason: " + err.Error())
 	}
-	return nil
+	oid, _ := result.InsertedID.(primitive.ObjectID)
+	r.UID = oid
+	return &r
 }
 
-func (repo ReminderRepository) DeleteReminder(UID primitive.ObjectID) bool {
-	_, err := repo.collection().DeleteOne(context.TODO(), bson.D{{"_id", UID}})
+func (repo ReminderRepository) DeleteReminder(UID primitive.ObjectID) (bool, int64) {
+	dr, err := repo.collection().DeleteOne(context.TODO(), bson.D{{"_id", UID}})
 	if err != nil {
 		log.Println("Failed to delete entry with id=" + UID.String() + " Reason: " + err.Error())
-		return false
+		return false, 0
 	}
-	return true
+	return true, dr.DeletedCount
 }
 
 func (repo *ReminderRepository) UpdateReminder(r Reminder) *Reminder {
@@ -85,8 +87,30 @@ func (repo *ReminderRepository) FindReminder(UID primitive.ObjectID) *Reminder {
 }
 
 func (repo *ReminderRepository) FindAllReminder() []Reminder {
-	var reminders []Reminder
-	cursor, err := repo.collection().Find(context.TODO(), bson.D{{}})
+	return repo.findAllInternal(bson.D{{}})
+}
+
+func (repo *ReminderRepository) FindCompleted() []Reminder {
+	filter := bson.D{
+		{"completed", true},
+	}
+	return repo.findAllInternal(filter)
+}
+
+func (repo *ReminderRepository) FindUncompleted() []Reminder {
+	filter := bson.D{
+		{"completed", false},
+	}
+	return repo.findAllInternal(filter)
+}
+
+func (repo *ReminderRepository) collection() *mongo.Collection {
+	return repo.DB.Collection("reminder")
+}
+
+func (repo *ReminderRepository) findAllInternal(filter interface{}) []Reminder {
+	reminders := make([]Reminder, 0)
+	cursor, err := repo.collection().Find(context.TODO(), filter)
 	defer cursor.Close(context.TODO())
 
 	if err != nil {
@@ -102,8 +126,4 @@ func (repo *ReminderRepository) FindAllReminder() []Reminder {
 		reminders = append(reminders, r)
 	}
 	return reminders
-}
-
-func (repo *ReminderRepository) collection() *mongo.Collection {
-	return repo.DB.Collection("reminder")
 }

@@ -3,7 +3,10 @@ package main
 import (
 	"go-remember/persistence"
 	"go-remember/service"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go-remember/types"
+	"os"
+	"strconv"
+	//"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func main() {
@@ -11,9 +14,16 @@ func main() {
 	defer persistence.Disconnect(db)
 
 	repo := persistence.ReminderRepository{DB: db}
-	repo.FindAllReminder()
-	repo.FindReminder(primitive.NewObjectID())
+	port := 9999
+	if p := os.Getenv("REMINDER_PORT"); p != "" {
+		port, _ = strconv.Atoi(p)
+	}
 
-	service.StartWebServer("9999")
+	c := &types.AppConfig{
+		Repo: repo,
+		Port: port,
+	}
+
+	service.StartWebServer(*c)
 
 }
